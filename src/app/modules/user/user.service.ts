@@ -21,6 +21,12 @@ const getUserById = async (userId: number) => {
         userId,
       },
     },
+    {
+      $project: {
+        password: 0,
+        orders: 0,
+      },
+    },
   ]);
   return result;
 };
@@ -28,8 +34,7 @@ const getUserById = async (userId: number) => {
 const updateUserService = async (userId: number, userData: TUser) => {
   const result = await User.findOneAndUpdate({ userId }, userData, {
     new: true,
-  });
-  console.log('result>', result);
+  }).select('-password -orders');
   return result;
 };
 

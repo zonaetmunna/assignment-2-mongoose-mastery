@@ -149,8 +149,10 @@ userSchema.pre('find', async function (next) {
 // static method for existUser
 userSchema.statics.isUserExists = async function (userId: string) {
   const existUser = await this.findOne({ userId });
-  return existUser;
+  return !!existUser;
 };
+
+// mongoose middleware method for findOne
 
 /* // for find single user mongoose middle method
 userSchema.pre('aggregate', async function (next) {
@@ -166,7 +168,7 @@ userSchema.post('aggregate', async function (user, next) {
 
 // mongoose middleware method for update
 userSchema.post('findOneAndUpdate', async function (doc, next) {
-  doc.password = '';
+  doc.password = undefined;
   next();
 });
 

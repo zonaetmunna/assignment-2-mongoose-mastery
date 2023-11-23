@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import userValidationSchema from './user.validation';
 import { UserService } from './user.service';
 import { responseGenerate } from '../../utils/responseGenerate';
+import User from './user.model';
 
 const createUserSchema = userValidationSchema.omit({ orders: true });
 // create user
@@ -17,8 +18,7 @@ const createUser = async (req: Request, res: Response) => {
     res.json(
       responseGenerate(true, 'User created successfully!', result, null),
     );
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.json(
       responseGenerate(false, 'User creation failed', null, error.message),
     );
@@ -28,9 +28,14 @@ const createUser = async (req: Request, res: Response) => {
 const getAllUsers = async (req: Request, res: Response) => {
   try {
     const users = await UserService.getAllUsers();
-    res.json(responseGenerate(true, 'Users fetched successfully', users));
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+    if (!users) {
+      return res.json(responseGenerate(false, 'Users not found', null));
+    }
+
+    res.json(
+      responseGenerate(true, 'Users fetched successfully !', users, null),
+    );
+  } catch (error: unknown) {
     res.json(
       responseGenerate(false, 'Users fetch failed', null, error.message),
     );
@@ -40,20 +45,19 @@ const getAllUsers = async (req: Request, res: Response) => {
 const getUserById = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
-    console.log(
-      '🚀 ~ file: user.controller.ts:40 ~ getUserById ~ userId:',
-      userId,
-    );
-
-    const user = await UserService.getUserById(Number(userId));
-    console.log('🚀 ~ file: user.controller.ts:46 ~ getUserById ~ user:', user);
-
-    if (!user) {
-      return res.json(responseGenerate(false, 'User not found', null));
+    const isUserExists = await User.isUserExists(userId);
+    if (!isUserExists) {
+      return res.json(
+        responseGenerate(false, 'User not found', null, {
+          code: 404,
+          description: 'User not found!',
+        }),
+      );
     }
+    const user = await UserService.getUserById(Number(userId));
+
     res.json(responseGenerate(true, 'User fetched successfully', user));
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.json(responseGenerate(false, 'User fetch failed', null, error.message));
   }
 };
@@ -61,32 +65,25 @@ const getUserById = async (req: Request, res: Response) => {
 const updateUser = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
-    console.log(
-      '🚀 ~ file: user.controller.ts:61 ~ updateUser ~ userId:',
-      userId,
-    );
-
     const userData = req.body;
-    console.log(
-      '🚀 ~ file: user.controller.ts:64 ~ updateUser ~ userData:',
-      userData,
-    );
-    // const zodParsedUser = userValidationSchema.parse(userData);
+
+    const isUserExists = await User.isUserExists(userId);
+    if (!isUserExists) {
+      return res.json(
+        responseGenerate(false, 'User not found', null, {
+          code: 404,
+          description: 'User not found!',
+        }),
+      );
+    }
 
     const result = await UserService.updateUserService(
       Number(userId),
       userData,
     );
-    console.log(
-      '🚀 ~ file: user.controller.ts:77 ~ updateUser ~ result:',
-      result,
-    );
-    if (!result) {
-      return res.json(responseGenerate(false, 'User not found', null));
-    }
-    res.json(responseGenerate(true, 'User updated successfully', result));
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+
+    res.json(responseGenerate(true, 'User updated successfully', result, null));
+  } catch (error: unknown) {
     res.json(
       responseGenerate(false, 'User update failed', null, error.message),
     );
