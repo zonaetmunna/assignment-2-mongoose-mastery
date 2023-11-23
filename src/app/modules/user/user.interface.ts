@@ -1,3 +1,5 @@
+import { Model } from 'mongoose';
+
 export type TFullName = {
   firstName: string;
   lastName: string;
@@ -27,3 +29,8 @@ export type TUser = {
   address: TAddress;
   orders: TOrders[];
 };
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export interface IUserModel extends Model<TUser> {
+  isUserExists(userId: string): Promise<TUser | null>;
+}

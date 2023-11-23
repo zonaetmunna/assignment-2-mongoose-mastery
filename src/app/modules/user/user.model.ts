@@ -1,50 +1,72 @@
+/* eslint-disable @typescript-eslint/no-this-alias */
 import { Schema, model } from 'mongoose';
 import bcrypt from 'bcrypt';
-import { TAddress, TFullName, TOrders, TUser } from './user.interface';
+import {
+  IUserModel,
+  TAddress,
+  TFullName,
+  TOrders,
+  TUser,
+} from './user.interface';
 import config from '../../config/config';
 
-const fullNameSchema = new Schema<TFullName>({
-  firstName: {
-    type: String,
-    required: [true, 'First Name is required'],
-    trim: true,
+const fullNameSchema = new Schema<TFullName>(
+  {
+    firstName: {
+      type: String,
+      required: [true, 'First Name is required'],
+      trim: true,
+    },
+    lastName: {
+      type: String,
+      required: [true, 'Last Name is required'],
+      trim: true,
+    },
   },
-  lastName: {
-    type: String,
-    required: [true, 'Last Name is required'],
-    trim: true,
+  {
+    _id: false,
   },
-});
+);
 
-const addressSchema = new Schema<TAddress>({
-  street: {
-    type: String,
-    required: true,
+const addressSchema = new Schema<TAddress>(
+  {
+    street: {
+      type: String,
+      required: true,
+    },
+    city: {
+      type: String,
+      required: true,
+    },
+    country: {
+      type: String,
+      required: true,
+    },
   },
-  city: {
-    type: String,
-    required: true,
+  {
+    _id: false,
   },
-  country: {
-    type: String,
-    required: true,
-  },
-});
+);
 
-const orderSchema = new Schema<TOrders>({
-  productName: {
-    type: String,
-    required: true,
+const orderSchema = new Schema<TOrders>(
+  {
+    productName: {
+      type: String,
+      required: true,
+    },
+    price: {
+      type: Number,
+      required: true,
+    },
+    quantity: {
+      type: Number,
+      required: true,
+    },
   },
-  price: {
-    type: Number,
-    required: true,
+  {
+    _id: false,
   },
-  quantity: {
-    type: Number,
-    required: true,
-  },
-});
+);
 
 const userSchema = new Schema<TUser>(
   {
@@ -99,6 +121,7 @@ const userSchema = new Schema<TUser>(
   },
 );
 
+// mongoose method for save
 userSchema.pre('save', async function (next) {
   // eslint-disable-next-line @typescript-eslint/no-this-alias
   const user = this;
@@ -109,17 +132,43 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
+// mongoose method for save
 userSchema.post('save', async function (doc, next) {
-  doc.password = '';
+  if (doc) {
+    doc.password = undefined;
+  }
   next();
 });
 
+// mongoose method for find
 userSchema.pre('find', async function (next) {
   this.select('username fullName age email address');
   next();
 });
 
-// userSchema.pre('findOne', async function (next) {});
+// static method for existUser
+userSchema.statics.isUserExists = async function (userId: string) {
+  const existUser = await this.findOne({ userId });
+  return existUser;
+};
 
-const User = model('User', userSchema);
+/* // for find single user mongoose middle method
+userSchema.pre('aggregate', async function (next) {
+  this.pipeline().unshift({ $match: { userId: { $exists: true } } });
+  next();
+});
+userSchema.post('aggregate', async function (user, next) {
+  user.forEach(user => {
+    user.password = '';
+  });
+  next();
+}); */
+
+// mongoose middleware method for update
+userSchema.post('findOneAndUpdate', async function (doc, next) {
+  doc.password = '';
+  next();
+});
+
+const User = model<TUser, IUserModel>('User', userSchema);
 export default User;

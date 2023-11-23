@@ -1,14 +1,28 @@
+interface ErrorResponse {
+  code: number;
+  description: string;
+}
+
 export const responseGenerate = (
   success: boolean = true,
   message: string = '',
-  data: unknown | null = null,
-  // error: { code: number; description: string } | null = null,
-  error: string = '',
+  data: object | null = null,
+  error: ErrorResponse | null = null,
 ) => {
-  return {
+  const response: {
+    error: ErrorResponse;
+    success: boolean;
+    message: string;
+  } = {
     success,
     message,
-    data,
-    error,
   };
+
+  if (data !== null && error === null) {
+    response.data = data;
+  } else if (error !== null) {
+    response.error = error;
+  }
+
+  return response;
 };
