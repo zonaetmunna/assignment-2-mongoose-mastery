@@ -93,10 +93,21 @@ const updateUser = async (req: Request, res: Response) => {
 const deleteUser = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
+
+    const isUserExists = await User.isUserExists(userId);
+    if (!isUserExists) {
+      return res.json(
+        responseGenerate(false, 'User not found', null, {
+          code: 404,
+          description: 'User not found!',
+        }),
+      );
+    }
+
     const result = await UserService.deleteUserService(Number(userId));
-    res.json(responseGenerate(true, 'User deleted successfully', result));
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+
+    res.json(responseGenerate(true, 'User deleted successfully', 'null', null));
+  } catch (error: unknown) {
     res.json(
       responseGenerate(false, 'User deletion failed', null, error.message),
     );
