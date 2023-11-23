@@ -114,5 +114,12 @@ userSchema.post('save', async function (doc, next) {
   next();
 });
 
+userSchema.pre('find', async function (next) {
+  this.select('username fullName age email address');
+  next();
+});
+
+// userSchema.pre('findOne', async function (next) {});
+
 const User = model('User', userSchema);
 export default User;

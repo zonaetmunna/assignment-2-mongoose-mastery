@@ -9,6 +9,12 @@ const createUserAtService = async (userData: CreateUserInput) => {
   return result;
 };
 
+const getAllUsers = async () => {
+  const result = await User.find();
+  return result;
+};
+
 export const UserService = {
   createUserAtService,
+  getAllUsers,
 };

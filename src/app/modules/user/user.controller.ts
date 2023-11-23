@@ -20,6 +20,17 @@ const createUser = async (req: Request, res: Response) => {
   }
 };
 
+const getAllUsers = async (req: Request, res: Response) => {
+  try {
+    const users = await UserService.getAllUsers();
+    res.json(responseGenerate(true, 'Users fetched successfully', users));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    res.json(responseGenerate(false, 'Users fetch failed', null, error));
+  }
+};
+
 export const UserController = {
   createUser,
+  getAllUsers,
 };
