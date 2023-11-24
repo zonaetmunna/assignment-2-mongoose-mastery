@@ -123,7 +123,6 @@ const userSchema = new Schema<TUser>(
 
 // mongoose method for save
 userSchema.pre('save', async function (next) {
-  // eslint-disable-next-line @typescript-eslint/no-this-alias
   const user = this;
   user.password = await bcrypt.hash(
     user.password,
@@ -134,13 +133,12 @@ userSchema.pre('save', async function (next) {
 
 // mongoose method for save
 userSchema.post('save', async function (doc, next) {
-  if (doc) {
-    doc.password = undefined;
-  }
+  doc.password = undefined || '';
+
   next();
 });
 
-// mongoose method for find
+// mongoose
 userSchema.pre('find', async function (next) {
   this.select('username fullName age email address');
   next();

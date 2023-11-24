@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from 'express';
 import userValidationSchema from './user.validation';
 import { UserService } from './user.service';
@@ -18,7 +19,7 @@ const createUser = async (req: Request, res: Response) => {
     res.json(
       responseGenerate(true, 'User created successfully!', result, null),
     );
-  } catch (error: unknown) {
+  } catch (error: any) {
     res.json(
       responseGenerate(false, 'User creation failed', null, error.message),
     );
@@ -27,15 +28,10 @@ const createUser = async (req: Request, res: Response) => {
 
 const getAllUsers = async (req: Request, res: Response) => {
   try {
-    const users = await UserService.getAllUsers();
-    if (!users) {
-      return res.json(responseGenerate(false, 'Users not found', null));
-    }
+    const result = await UserService.getAllUsers();
 
-    res.json(
-      responseGenerate(true, 'Users fetched successfully !', users, null),
-    );
-  } catch (error: unknown) {
+    res.json(responseGenerate(true, 'Users fetched successfully !', result));
+  } catch (error: any) {
     res.json(
       responseGenerate(false, 'Users fetch failed', null, error.message),
     );
@@ -57,7 +53,7 @@ const getUserById = async (req: Request, res: Response) => {
     const user = await UserService.getUserById(Number(userId));
 
     res.json(responseGenerate(true, 'User fetched successfully', user));
-  } catch (error: unknown) {
+  } catch (error: any) {
     res.json(responseGenerate(false, 'User fetch failed', null, error.message));
   }
 };
@@ -83,7 +79,7 @@ const updateUser = async (req: Request, res: Response) => {
     );
 
     res.json(responseGenerate(true, 'User updated successfully', result, null));
-  } catch (error: unknown) {
+  } catch (error: any) {
     res.json(
       responseGenerate(false, 'User update failed', null, error.message),
     );
@@ -104,12 +100,50 @@ const deleteUser = async (req: Request, res: Response) => {
       );
     }
 
-    const result = await UserService.deleteUserService(Number(userId));
+    await UserService.deleteUserService(Number(userId));
 
     res.json(responseGenerate(true, 'User deleted successfully', 'null', null));
-  } catch (error: unknown) {
+  } catch (error: any) {
     res.json(
       responseGenerate(false, 'User deletion failed', null, error.message),
+    );
+  }
+};
+
+const updateUserProducts = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+
+    const order = req.body;
+
+    const isUserExists = await User.isUserExists(userId);
+    if (!isUserExists) {
+      return res.json(
+        responseGenerate(false, 'User not found', null, {
+          code: 404,
+          description: 'User not found!',
+        }),
+      );
+    }
+
+    await UserService.updateUserProductsService(Number(userId), order);
+
+    res.json(
+      responseGenerate(
+        true,
+        'User products updated successfully',
+        'null',
+        null,
+      ),
+    );
+  } catch (error: any) {
+    res.json(
+      responseGenerate(
+        false,
+        'User products update failed',
+        null,
+        error.message,
+      ),
     );
   }
 };
@@ -117,6 +151,17 @@ const deleteUser = async (req: Request, res: Response) => {
 const getUserOrders = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
+
+    const isUserExists = await User.isUserExists(userId);
+    if (!isUserExists) {
+      return res.json(
+        responseGenerate(false, 'User not found', null, {
+          code: 404,
+          description: 'User not found!',
+        }),
+      );
+    }
+
     const result = await UserService.getUserOrdersService(Number(userId));
     if (!result) {
       return res.json(responseGenerate(false, 'User not found', null));
@@ -124,7 +169,6 @@ const getUserOrders = async (req: Request, res: Response) => {
     res.json(
       responseGenerate(true, 'User orders fetched successfully', result),
     );
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     res.json(
       responseGenerate(false, 'User orders fetch failed', null, error.message),
@@ -135,9 +179,21 @@ const getUserOrders = async (req: Request, res: Response) => {
 const getTotalOrderPrice = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
+
+    const isUserExists = await User.isUserExists(userId);
+    if (!isUserExists) {
+      return res.json(
+        responseGenerate(false, 'User not found', null, {
+          code: 404,
+          description: 'User not found!',
+        }),
+      );
+    }
+
     const totalPrice = await UserService.getTotalOrderPriceService(
       Number(userId),
     );
+
     if (totalPrice === null) {
       return res.json(
         responseGenerate(false, 'User not found', null, {
@@ -156,7 +212,6 @@ const getTotalOrderPrice = async (req: Request, res: Response) => {
         null,
       ),
     );
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     res.json(
       responseGenerate(false, 'User orders fetch failed', null, error.message),
@@ -170,6 +225,7 @@ export const UserController = {
   getUserById,
   updateUser,
   deleteUser,
+  updateUserProducts,
   getUserOrders,
   getTotalOrderPrice,
 };

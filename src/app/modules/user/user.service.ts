@@ -43,6 +43,20 @@ const deleteUserService = async (userId: number) => {
   return result;
 };
 
+const updateUserProductsService = async (
+  userId: number,
+  order: TUser['orders'],
+) => {
+  const result = await User.findOneAndUpdate(
+    { userId },
+    { orders: order },
+    {
+      new: true,
+    },
+  );
+  return result;
+};
+
 // get orders for specific user
 const getUserOrdersService = async (userId: number) => {
   const result = await User.aggregate([
@@ -90,6 +104,7 @@ export const UserService = {
   getUserById,
   updateUserService,
   deleteUserService,
+  updateUserProductsService,
   getUserOrdersService,
   getTotalOrderPriceService,
 };
