@@ -5,7 +5,9 @@ import { UserService } from './user.service';
 import { responseGenerate } from '../../utils/responseGenerate';
 import User from './user.model';
 
+// omit orders from user
 const createUserSchema = userValidationSchema.omit({ orders: true });
+
 // create user
 const createUser = async (req: Request, res: Response) => {
   try {
@@ -26,6 +28,7 @@ const createUser = async (req: Request, res: Response) => {
   }
 };
 
+// get all users
 const getAllUsers = async (req: Request, res: Response) => {
   try {
     const result = await UserService.getAllUsers();
@@ -38,6 +41,7 @@ const getAllUsers = async (req: Request, res: Response) => {
   }
 };
 
+// get user by id
 const getUserById = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
@@ -58,6 +62,7 @@ const getUserById = async (req: Request, res: Response) => {
   }
 };
 
+// update user information
 const updateUser = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
@@ -86,6 +91,7 @@ const updateUser = async (req: Request, res: Response) => {
   }
 };
 
+// delete user
 const deleteUser = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
@@ -110,6 +116,7 @@ const deleteUser = async (req: Request, res: Response) => {
   }
 };
 
+// update user products
 const updateUserProducts = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
@@ -148,6 +155,7 @@ const updateUserProducts = async (req: Request, res: Response) => {
   }
 };
 
+// get user orders
 const getUserOrders = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
@@ -167,7 +175,9 @@ const getUserOrders = async (req: Request, res: Response) => {
       return res.json(responseGenerate(false, 'User not found', null));
     }
     res.json(
-      responseGenerate(true, 'User orders fetched successfully', result),
+      responseGenerate(true, 'User orders fetched successfully', {
+        orders: result,
+      }),
     );
   } catch (error: any) {
     res.json(
@@ -176,6 +186,7 @@ const getUserOrders = async (req: Request, res: Response) => {
   }
 };
 
+// get total order price for specific user
 const getTotalOrderPrice = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
@@ -194,14 +205,6 @@ const getTotalOrderPrice = async (req: Request, res: Response) => {
       Number(userId),
     );
 
-    if (totalPrice === null) {
-      return res.json(
-        responseGenerate(false, 'User not found', null, {
-          code: 404,
-          description: 'User not found!',
-        }),
-      );
-    }
     res.json(
       responseGenerate(
         true,

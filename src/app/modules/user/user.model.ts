@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-this-alias */
 import { Schema, model } from 'mongoose';
 import bcrypt from 'bcrypt';
@@ -25,6 +26,8 @@ const fullNameSchema = new Schema<TFullName>(
   },
   {
     _id: false,
+    timestamps: false,
+    versionKey: false,
   },
 );
 
@@ -45,6 +48,8 @@ const addressSchema = new Schema<TAddress>(
   },
   {
     _id: false,
+    timestamps: false,
+    versionKey: false,
   },
 );
 
@@ -65,6 +70,8 @@ const orderSchema = new Schema<TOrders>(
   },
   {
     _id: false,
+    timestamps: false,
+    versionKey: false,
   },
 );
 
@@ -117,11 +124,12 @@ const userSchema = new Schema<TUser>(
     orders: [orderSchema],
   },
   {
-    timestamps: true,
+    versionKey: false,
+    timestamps: false,
   },
 );
 
-// mongoose method for save
+// hash password before saving
 userSchema.pre('save', async function (next) {
   const user = this;
   user.password = await bcrypt.hash(
@@ -131,16 +139,17 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-// mongoose method for save
+//  ignore password and orders failed to save
 userSchema.post('save', async function (doc, next) {
-  doc.password = undefined || '';
+  doc.password = undefined as any;
+  doc.orders = undefined as any;
 
   next();
 });
 
 // mongoose
 userSchema.pre('find', async function (next) {
-  this.select('username fullName age email address');
+  this.select('username fullName age email address _id');
   next();
 });
 

@@ -30,7 +30,6 @@ export type TUser = {
   orders: TOrders[];
 };
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
-export interface IUserModel extends Model<TUser> {
+export type IUserModel = Model<TUser> & {
   isUserExists(userId: string): Promise<TUser | null>;
-}
+};
